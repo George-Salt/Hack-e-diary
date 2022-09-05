@@ -1,9 +1,16 @@
 import argparse
+import os
 import random
+
+import django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
+django.setup()
 
 from datacenter.models import (Chastisement, Commendation, Lesson, Mark,
                                Schoolkid)
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+
+
 
 
 COMMENDATIONS_TEXTS = [
@@ -93,4 +100,4 @@ if __name__ == "__main__":
     except MultipleObjectsReturned:
         print("Найдено несколько учеников, уточните запрос!")
 
-    print(improve_performance(schoolkid))
+    improve_performance(schoolkid)
