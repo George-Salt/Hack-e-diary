@@ -1,3 +1,4 @@
+import argparse
 import random
 
 from datacenter.models import (Chastisement, Commendation, Lesson, Mark,
@@ -40,21 +41,14 @@ COMMENDATIONS_TEXTS = [
 
 
 def fix_marks(schoolkid):
-    schoolkid_bad_marks = Mark.objects.filter(
+    Mark.objects.filter(
         schoolkid=schoolkid,
         points__in=[2, 3]
-    )
-
-    for bad_mark in schoolkid_bad_marks:
-        bad_mark.points = 5
-        bad_mark.save()
+    ).update(points = 5)
 
 
 def remove_chastisements(schoolkid):
-    schoolkid_chastisements = Chastisement.objects.filter(schoolkid=schoolkid)
-
-    for chastisement in schoolkid_chastisements:
-        chastisement.delete()
+    Chastisement.objects.filter(schoolkid=schoolkid).delete()
 
 
 def create_commendation(schoolkid):
@@ -65,7 +59,7 @@ def create_commendation(schoolkid):
     lesson = lessons.order_by("date").first()
     text = random.choice(COMMENDATIONS_TEXTS)
 
-    commendation = Commendation.objects.get_or_create(
+    Commendation.objects.get_or_create(
         subject=lesson.subject,
         schoolkid=schoolkid,
         created=lesson.date,
@@ -78,12 +72,21 @@ def improve_performance(schoolkid):
     create_commendation(schoolkid)
     remove_chastisements(schoolkid)
     fix_marks(schoolkid)
-    return f"Теперь ученик {schoolkid.full_name} идеален!"
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Программа для взлома базы данных электронного дневника школы."
+    )
+    parser.add_argument(
+        "--full_name",
+        type=str,
+        help="Полное имя ученика"
+    )
+    args = parser.parse_args()
+
     try:
-        name = input("Введите полное имя ученика: ")
+        name = args.full_name
         schoolkid = Schoolkid.objects.get(full_name__contains=name)
     except ObjectDoesNotExist:
         print("Такого ученика нет в базе!")
